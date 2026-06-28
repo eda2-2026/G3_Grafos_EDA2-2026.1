@@ -1,63 +1,61 @@
-from fastapi import APIRouter, HTTPException
-from app.services.spotify_service import SpotifyService
-from app.services.graph_service import GraphService
-from app.services.recommender_service import RecommenderService
-from app.models.schemas import RecommendationResponse, Artist
+from fastapi import APIRouter, HTTPException, Query
+from requests.exceptions import RequestException
+from spotipy import SpotifyException
+
+from app.dependencies import spotify_service, graph_service, recommender_service
+from app.models.schemas import Artist, Recommendation, RecommendationResponse
 
 router = APIRouter()
-spotify_service = SpotifyService()
-graph_service = GraphService()
-recommender_service = RecommenderService(graph_service)
 
-@router.get("/recommend/{artist_name}")
-async def recommend(artist_name: str, limit: int = 10):
-    """Endpoint principal para recomendações."""
-    # Busca o artista
+# Erros de rede/HTTP que justificam degradar (em vez de quebrar) chamadas
+# opcionais ao Spotify: SpotifyException cobre erros HTTP da API; RequestException
+# cobre falhas de transporte (timeout, conexão) que NÃO viram SpotifyException.
+_SPOTIFY_ERRORS = (SpotifyException, RequestException)
+
+
+@router.get("/recommend/{artist_name}", response_model=RecommendationResponse)
+async def recommend(artist_name: str, limit: int = Query(10, ge=1)):
+    """Endpoint principal: recomenda artistas similares via RWR sobre o grafo."""
+    # Busca o artista-semente.
     artist_data = spotify_service.search_artist(artist_name)
     if not artist_data:
         raise HTTPException(status_code=404, detail="Artista não encontrado")
-    
-    # Constrói o grafo (em produção, carregaria de cache)
-    artist_id = artist_data['id']
-    genres = artist_data['genres']
-    graph_service.add_artist_genre_edges(artist_id, artist_data['name'], genres)
-    
-    # Busca artistas relacionados e adiciona ao grafo
-    related = spotify_service.get_related_artists(artist_id)
-    for related_artist in related[:10]:  # Limita para não sobrecarregar
-        related_genres = related_artist.get('genres', [])
-        graph_service.add_artist_genre_edges(
-            related_artist['id'],
-            related_artist['name'],
-            related_genres
-        )
-    
-    # Gera recomendações
-    recommendations = recommender_service.get_recommendations(artist_id, top_n=limit)
-    
-    # Constrói resposta
-    seed_artist = Artist(
-        id=artist_id,
-        name=artist_data['name'],
-        genres=genres,
-        popularity=artist_data.get('popularity')
+
+    artist_id = artist_data["id"]
+    graph_service.add_artist_genre_edges(
+        artist_id, artist_data["name"], artist_data.get("genres", [])
     )
-    
-    result = []
+
+    # Artistas relacionados alimentam o grafo. O endpoint related-artists do
+    # Spotify foi descontinuado (nov/2024) para apps novos; se ele falhar (erro
+    # HTTP ou de rede), degradamos sem quebrar (o grafo fica só com a semente).
+    try:
+        related = spotify_service.get_related_artists(artist_id)
+    except _SPOTIFY_ERRORS:
+        related = []
+    for related_artist in related[:10]:  # Limita para não sobrecarregar.
+        graph_service.add_artist_genre_edges(
+            related_artist["id"],
+            related_artist["name"],
+            related_artist.get("genres", []),
+        )
+
+    # Gera recomendações com Random Walk with Restart.
+    recommendations = recommender_service.get_recommendations(artist_id, top_n=limit)
+
+    # Enriquece cada recomendação. O enriquecimento é best-effort: se a chamada
+    # por artista falhar (rate limit, id obsoleto, rede), usamos o nome já
+    # presente no grafo em vez de abortar a resposta inteira com 500.
+    items = []
     for rec_artist_id, score in recommendations:
-        # Busca dados do artista recomendado (em produção, teria em cache)
-        rec_data = spotify_service.sp.artist(rec_artist_id)
-        result.append({
-            'artist': Artist(
-                id=rec_artist_id,
-                name=rec_data['name'],
-                genres=rec_data.get('genres', []),
-                popularity=rec_data.get('popularity')
-            ),
-            'score': score
-        })
-    
-    return {
-        'seed_artist': seed_artist.dict(),
-        'recommendations': result
-    }
+        try:
+            artist = Artist.from_spotify(spotify_service.sp.artist(rec_artist_id))
+        except _SPOTIFY_ERRORS:
+            node = graph_service.graph.nodes[rec_artist_id] if rec_artist_id in graph_service.graph else {}
+            artist = Artist(id=rec_artist_id, name=node.get("name", rec_artist_id))
+        items.append(Recommendation(artist=artist, score=score))
+
+    return RecommendationResponse(
+        seed_artist=Artist.from_spotify(artist_data),
+        recommendations=items,
+    )
