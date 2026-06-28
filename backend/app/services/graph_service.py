@@ -1,4 +1,7 @@
+from typing import Optional
+
 import networkx as nx
+
 GENRE_PREFIX = "genre::"
 
 
@@ -33,3 +36,22 @@ class GraphService:
             self.graph.has_node(artist_id)
             and self.graph.nodes[artist_id].get("type") == "artist"
         )
+
+    def get_graph_data(self, artist_id: Optional[str] = None) -> dict:
+        # Exporta {"nodes":[{id,type,name}], "edges":[{source,target,weight}]}.
+        # Com artist_id, restringe ao componente conexo (ou vazio se ausente).
+        graph = self.graph
+        if artist_id is not None:
+            if artist_id not in graph:
+                return {"nodes": [], "edges": []}
+            graph = graph.subgraph(nx.node_connected_component(graph, artist_id))
+
+        nodes = [
+            {"id": node, "type": data.get("type"), "name": data.get("name", node)}
+            for node, data in graph.nodes(data=True)
+        ]
+        edges = [
+            {"source": u, "target": v, "weight": data.get("weight", 1.0)}
+            for u, v, data in graph.edges(data=True)
+        ]
+        return {"nodes": nodes, "edges": edges}
