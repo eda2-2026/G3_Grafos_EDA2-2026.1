@@ -2,7 +2,6 @@ import re
 from typing import Dict, List, Optional
 
 import httpx
-from requests.exceptions import RequestException
 
 from app.config import Config
 
@@ -134,11 +133,11 @@ class LastFmService:
                     normalized["genres"] = full.get("genres", [])
                     if not normalized["images"]:
                         normalized["images"] = full.get("images", [])
-                except (LastFmApiError, RequestException):
+                except (LastFmApiError, httpx.RequestError):
                     pass
             related.append(normalized)
         return related
 
 
 # Alias para tratamento de erros de rede/API nas rotas.
-_LASTFM_ERRORS = (LastFmApiError, RequestException)
+_LASTFM_ERRORS = (LastFmApiError, httpx.RequestError)
