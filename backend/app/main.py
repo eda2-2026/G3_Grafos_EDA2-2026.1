@@ -3,23 +3,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.routes import recommend, search, graph
-from app.services.spotify_service import SpotifyCredentialsError
+from app.services.lastfm_service import LastFmCredentialsError
 
 app = FastAPI(title="Recomendador Musical - API", version="1.0.0")
 
 # Configuração CORS para permitir requisições do frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # Portas do frontend
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-@app.exception_handler(SpotifyCredentialsError)
-async def _spotify_credentials_handler(request: Request, exc: SpotifyCredentialsError):
-    """Traduz credenciais ausentes do Spotify em um 503 claro (em vez de 500)."""
+@app.exception_handler(LastFmCredentialsError)
+async def _lastfm_credentials_handler(request: Request, exc: LastFmCredentialsError):
+    """Traduz API key ausente do Last.fm em um 503 claro (em vez de 500)."""
     return JSONResponse(status_code=503, content={"detail": str(exc)})
 
 

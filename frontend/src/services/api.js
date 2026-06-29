@@ -1,22 +1,24 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
+const client = axios.create({ baseURL: API_BASE_URL });
 
 export const api = {
-  async searchArtist(query) {
-    const response = await axios.get(`${API_BASE_URL}/search`, { params: { q: query } });
-    return response.data;
+  async searchArtists(query, limit = 8) {
+    const { data } = await client.get('/search', { params: { q: query, limit } });
+    return data;
   },
-  
+
   async getRecommendations(artistName, limit = 10) {
-    const response = await axios.get(`${API_BASE_URL}/recommend/${encodeURIComponent(artistName)}`, {
-      params: { limit }
+    const { data } = await client.get(`/recommend/${encodeURIComponent(artistName)}`, {
+      params: { limit },
     });
-    return response.data;
+    return data;
   },
-  
+
   async getGraphData(artistId) {
-    const response = await axios.get(`${API_BASE_URL}/graph/${artistId}`);
-    return response.data;
-  }
+    const { data } = await client.get(`/graph/${encodeURIComponent(artistId)}`);
+    return data;
+  },
 };

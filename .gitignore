@@ -4,3 +4,5 @@ env/
 __pycache__/
 *.pyc
 pytest.ini
+.env
+backend/.env

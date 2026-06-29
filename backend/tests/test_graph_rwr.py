@@ -76,6 +76,6 @@ def test_get_graph_data_artista_ausente():
     assert GraphService().get_graph_data("nope") == {"nodes": [], "edges": []}
 
 
-def test_from_spotify_tolera_genres_null():
-    # Spotify pode devolver genres=null; não pode quebrar (ValidationError).
-    assert Artist.from_spotify({"id": "x", "name": "n", "genres": None}).genres == []
+def test_from_api_tolera_genres_null():
+    # A API pode devolver genres=null; não pode quebrar (ValidationError).
+    assert Artist.from_api({"id": "x", "name": "n", "genres": None}).genres == []

@@ -10,8 +10,8 @@ class Artist(BaseModel):
     image_url: Optional[str] = None
 
     @classmethod
-    def from_spotify(cls, data: dict) -> "Artist":
-        """Constrói um Artist a partir do dict cru retornado pela API do Spotify."""
+    def from_api(cls, data: dict) -> "Artist":
+        """Constrói um Artist a partir do dict normalizado da API musical."""
         images = data.get("images") or []
         return cls(
             id=data["id"],

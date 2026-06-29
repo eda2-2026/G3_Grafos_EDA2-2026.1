@@ -1,4 +1,4 @@
-"""Testes end-to-end da API (TestClient + Spotify mockado via fixtures)."""
+"""Testes end-to-end da API (TestClient + Last.fm mockado via fixtures)."""
 import pytest
 
 
@@ -36,7 +36,7 @@ def test_recommend_ranqueia_e_exclui_desconexo(client):
 
 
 def test_recommend_sobrevive_a_falha_no_enriquecimento(flaky_client):
-    # sp.artist('a2') falha; a recomendação não pode ser descartada nem virar 500.
+    # get_artist('a2') falha; a recomendação não pode ser descartada nem virar 500.
     js = flaky_client.get("/api/recommend/Radiohead").json()
     recs = {rec["artist"]["id"]: rec["artist"] for rec in js["recommendations"]}
     assert "a2" in recs
@@ -63,9 +63,8 @@ def test_graph_artista_ausente_vazio(client):
 
 def test_credenciais_ausentes_levanta_erro(monkeypatch):
     from app.config import Config
-    from app.services.spotify_service import SpotifyService, SpotifyCredentialsError
+    from app.services.lastfm_service import LastFmService, LastFmCredentialsError
 
-    monkeypatch.setattr(Config, "SPOTIFY_CLIENT_ID", None)
-    monkeypatch.setattr(Config, "SPOTIFY_CLIENT_SECRET", None)
-    with pytest.raises(SpotifyCredentialsError):
-        _ = SpotifyService().sp
+    monkeypatch.setattr(Config, "LASTFM_API_KEY", None)
+    with pytest.raises(LastFmCredentialsError):
+        _ = LastFmService().client
