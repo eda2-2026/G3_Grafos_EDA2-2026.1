@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: recomendador-musical
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: LASTFM_API_KEY
+        sync: false
+      - key: SERVE_STATIC
+        value: "true"
