@@ -9,82 +9,48 @@
 ## Sobre 
 O sistema é um recomendador musical que sugere artistas similares a partir de um artista de interesse, utilizando a API gratuita do [Last.fm](https://www.last.fm/api) e modelando a relação entre artistas e gêneros (tags) como um grafo bipartido. Através do algoritmo de Random Walk with Restart (uma variação do PageRank), o sistema caminha aleatoriamente pela rede de conexões musicais para identificar quais artistas são mais relevantes ao ponto de partida, revelando similaridades indiretas e sutis que métodos simples de filtragem por gênero não capturam. 
 
-## Como rodar
 
-### Backend
+## Acesso Online
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r backend/requirements.txt
+O sistema está disponível online em:
+[https://recomendador-musical-1ink.onrender.com/](https://recomendador-musical-1ink.onrender.com/)
 
-# Configure backend/.env com LASTFM_API_KEY (veja backend/.env.example)
-
-cd backend
-PYTHONPATH=. python run.py
-```
-
-API disponível em http://localhost:8000
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Interface em http://localhost:5173 (proxy para a API em `/api`)
-
-### Testes
-
-```bash
-cd backend
-PYTHONPATH=. pytest -v
-```
-
-## Deploy no Render (
-
-Frontend e backend sobem juntos em um único serviço Docker.
-
-### Pré-requisitos
-
-1. Repositório no [GitHub](https://github.com) com o código deste projeto
-2. Conta no [Render](https://render.com)
-3. API key do Last.fm
-
-### Passo a passo
-
-1. No Render, clique em **New +** → **Blueprint**
-2. Conecte o repositório GitHub — o Render detecta o `render.yaml`
-3. Na criação do serviço, informe a variável **`LASTFM_API_KEY`**
-4. Aguarde o build (5–10 min na primeira vez)
-5. Acesse a URL gerada, ex.: `https://recomendador-musical.onrender.com`
-
-### URLs em produção
-
-| URL | Função |
-|-----|--------|
-| `/` | Interface React |
-| `/api/search` | Busca de artistas |
-| `/api/recommend/{nome}` | Recomendações |
-| `/health` | Health check do Render |
-
-### Observações
-
-- O plano **free** coloca o app em sleep após ~15 min sem acesso; a primeira requisição pode demorar ~30–60s
-- O grafo fica em memória e é reiniciado a cada deploy
-- Em dev local, continue usando backend (`:8000`) + frontend (`:5173`) separados
-
-### Testar o Docker localmente (opcional)
-
-```bash
-docker build -t recomendador .
-docker run -p 8000:8000 -e LASTFM_API_KEY=sua_chave -e PORT=8000 recomendador
-```
-
-Abra http://localhost:8000
 
 ## Screenshots
 
+<div align="center">
+  <img src="./assets/tela1.png" alt="Interface parte 1" width="90%">
+  <br>
+  <em>Tela Inicial</em>
+</div>
+
+<br>
+
+<div align="center">
+  <img src="./assets/tela2.png" alt="Interface parte 1" width="90%">
+  <br>
+  <em>Resultados da Recomendação</em>
+</div>
+
+<br>
+
+<div align="center">
+  <img src="./assets/tela3.png" alt="Interface parte 1" width="90%">
+  <br>
+  <em>5 Recomendações com Grafo</em>
+</div>
+
 ## Video
+
+editar
+<div align="center">
+  <a href="https://youtu.be/evCLdcm3mNE">
+    <img src="https://img.youtube.com/vi/evCLdcm3mNE/hqdefault.jpg" width="50%" alt="Vídeo no YouTube">
+  </a>
+</div>
+
+<p align="center">
+  <b>Autores:</b>
+  <a href="https://github.com/rayenealmeida">Rayene Almeida</a> e 
+  <a href="https://github.com/enzo-fb">Enzo Fernandes</a>
+</p>
