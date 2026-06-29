@@ -42,10 +42,13 @@ O sistema está disponível online em:
 
 ## Video
 
-editar
+[https://youtu.be/FaSGysZxwYs](https://youtu.be/FaSGysZxwYs)
+
 <div align="center">
-  <a href="https://youtu.be/evCLdcm3mNE">
-    <img src="https://img.youtube.com/vi/evCLdcm3mNE/hqdefault.jpg" width="50%" alt="Vídeo no YouTube">
+  <a href="https://youtu.be/FaSGysZxwYs">
+    <img src="https://img.youtube.com/vi/FaSGysZxwYs/maxresdefault.jpg"
+         width="50%"
+         alt="Vídeo no YouTube">
   </a>
 </div>
 
