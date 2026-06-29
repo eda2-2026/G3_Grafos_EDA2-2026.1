@@ -5,7 +5,7 @@ exercitamos a NOSSA lógica (grafo + RWR + rotas), não a API externa.
 """
 import networkx as nx
 import pytest
-import requests
+import httpx
 
 from fastapi.testclient import TestClient
 
@@ -66,7 +66,7 @@ def netfail_client(monkeypatch):
     _patch_common(monkeypatch)
 
     def boom(_artist_id, limit=10):
-        raise requests.exceptions.ConnectionError("rede caiu")
+        raise httpx.ConnectError("rede caiu")
 
     monkeypatch.setattr(deps.lastfm_service, "get_related_artists", boom)
     monkeypatch.setattr(deps.lastfm_service, "get_artist", _FakeLastFm().get_artist)
