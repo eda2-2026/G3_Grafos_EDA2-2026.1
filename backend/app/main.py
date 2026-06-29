@@ -41,7 +41,11 @@ def _static_enabled() -> bool:
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    from app.config import Config
+    return {
+        "status": "healthy",
+        "lastfm_configured": bool(Config.LASTFM_API_KEY),
+    }
 
 
 @app.get("/")
