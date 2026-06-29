@@ -43,6 +43,48 @@ cd backend
 PYTHONPATH=. pytest -v
 ```
 
+## Deploy no Render (
+
+Frontend e backend sobem juntos em um único serviço Docker.
+
+### Pré-requisitos
+
+1. Repositório no [GitHub](https://github.com) com o código deste projeto
+2. Conta no [Render](https://render.com)
+3. API key do Last.fm
+
+### Passo a passo
+
+1. No Render, clique em **New +** → **Blueprint**
+2. Conecte o repositório GitHub — o Render detecta o `render.yaml`
+3. Na criação do serviço, informe a variável **`LASTFM_API_KEY`**
+4. Aguarde o build (5–10 min na primeira vez)
+5. Acesse a URL gerada, ex.: `https://recomendador-musical.onrender.com`
+
+### URLs em produção
+
+| URL | Função |
+|-----|--------|
+| `/` | Interface React |
+| `/api/search` | Busca de artistas |
+| `/api/recommend/{nome}` | Recomendações |
+| `/health` | Health check do Render |
+
+### Observações
+
+- O plano **free** coloca o app em sleep após ~15 min sem acesso; a primeira requisição pode demorar ~30–60s
+- O grafo fica em memória e é reiniciado a cada deploy
+- Em dev local, continue usando backend (`:8000`) + frontend (`:5173`) separados
+
+### Testar o Docker localmente (opcional)
+
+```bash
+docker build -t recomendador .
+docker run -p 8000:8000 -e LASTFM_API_KEY=sua_chave -e PORT=8000 recomendador
+```
+
+Abra http://localhost:8000
+
 ## Screenshots
 
 ## Video

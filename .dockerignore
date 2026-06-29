@@ -1,10 +1,14 @@
-venv/
 .venv/
+venv/
 env/
 __pycache__/
 *.pyc
-pytest.ini
+.pytest_cache/
 .env
 backend/.env
+
 frontend/node_modules/
 frontend/dist/
+
+.git/
+assets/
