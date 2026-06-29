@@ -3,7 +3,9 @@ import pytest
 
 
 def test_health(client):
-    assert client.get("/health").json() == {"status": "healthy"}
+    data = client.get("/health").json()
+    assert data["status"] == "healthy"
+    assert "lastfm_configured" in data
 
 
 def test_root_online(client):
